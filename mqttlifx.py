@@ -1,7 +1,10 @@
 #### need to put your deviceID here
 deviceID = "InternetButton"
 delay = 1000
-sqlite_file = '~/lifx/automation.db'
+########################################
+#Change the path to your sqlite database here
+sqlite_file = '/home/david/lifx/automation.db'
+########################################
 
 
 import lifx
@@ -28,10 +31,10 @@ def on_message(client, userdata, msg):
         c.execute('''INSERT INTO mqtt (topic, message) VALUES(?,?)''', (payload, topic))
     except sqlite3.IntegrityError:
         print("ERROR")
+        raise
     conn.commit()
     try:
         if str(msg.topic) == "particle/" + str(deviceID) + "/buttons":
-
             if str(msg.payload) == 'Button 1 Pressed':
                 toggle = ""
                 print "Button for Bedroom detected"
@@ -89,20 +92,22 @@ def on_message(client, userdata, msg):
         print "Hokey lightbulb code shat it's duds on a KeyError!"
         c.execute('''INSERT INTO error (app, error) VALUES (?,?)''', ('mqttlifx.py','KeyError'))
         conn.commit()
+        raise
     except AttributeError:
         c.execute('''INSERT INTO error (app, error) VALUES (?,?)''', ('mqttlifx.py', 'AttributeError'))
         print "Hokey lightbulb code shat it's duds on an AttributeError!"
         conn.commit()
+        raise
     except KeyboardInterrupt:
         print "Keyboard Interrupt.  Exiting"
 
-conn = sqlite3.connect(sqlite_file)
+conn = sqlite3.connect('/home/david/lifx/automation.db')
 c = conn.cursor()
 
 lights = lifx.Client()
-time.sleep(10)
+print lights
 client = mqtt.Client()
-time.sleep(1)
+print client
 client.on_connect = on_connect
 client.on_message = on_message
 
