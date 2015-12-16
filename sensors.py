@@ -1,12 +1,11 @@
 #### need to put your deviceID here
 deviceID = "infrared"
 delay = 1000
-sqlite_file = '~/lifx/automation.db'
+sqlite_file = '/home/david/lifx/automation.db'
 
-
-import sqlite3
 import time
-
+import sqlite3
+import paho.mqtt.client as mqtt
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, rc):
@@ -27,11 +26,36 @@ def on_message(client, userdata, msg):
 #    conn.commit()
     try:
         if str(msg.topic) == "particle/" + str(deviceID) + "/sensors/temp":
+            print("Temperature data detected")
             try:
-                c.execute('''INSERT INTO sensors (device, temperature) VALUES(?,?)''', (str(devicdID), topic))
-                except sqlite3.IntegrityError:
-                    print("ERROR")
-                conn.commit()
+                c.execute('''INSERT INTO sensors (device, temperature) VALUES(?,?)''', (str(deviceID), payload))
+            except sqlite3.IntegrityError:
+                print("ERROR")
+            conn.commit()
+            min = 16
+            max = 30
+            brightness = 100
+            temp = float(payload)
+            red = round((temp-min)*brightness/(max-min))
+            blue = round((max-temp)*brightness/(max-min))
+            if (temp < (max+min)/2):
+                green = round(brightness/2 - ((brightness/2) * ((max + min)/2 - temp) / ((max - min)/2)))
+            else:
+                green = round(brightness/2 - ((brightness/2 * (temp - (max + min)/2))/ ((max - min)/2)))
+            msgtopic = "house/lounge/temperature"
+            print msgtopic
+            print payload
+            client.publish(msgtopic, payload, 2, True)
+            payload = "Power:True/" + "Red:" + str(red) + "/" + "Green:" + str(green) + "/" + "Blue:" + str(blue) + "/"
+            msgtopic = "particle/InternetButton/buttons/2"
+            print msgtopic
+            print payload
+            client.publish(msgtopic, payload, 2, True)
+            msgtopic = "home/lounge/temperature"
+            print msgtopic
+            print payload
+            client.publish(msgtopic, payload, 2, True)
+
     except KeyError:
         print "Hokey lightbulb code shat it's duds on a KeyError!"
         c.execute('''INSERT INTO error (app, error) VALUES (?,?)''', ('mqttsensors.py','KeyError'))

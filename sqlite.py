@@ -63,7 +63,7 @@ while(1):
 ###############################
                     if label == "Study":
                         button = 3
-                    if label == "Robe" or label == "Lamp" or label == "Ensuite" or label == "Bedroom":
+                    if label == "Robe" or label == "Lamp1" or label == "Ensuite" or label == "Bedroom1" or label == "Lamp2":
                         button = 1
                     if label.startswith("Lounge"):
                         button = 4
@@ -86,6 +86,7 @@ while(1):
                             print msgtopic
                             print payload
                             client.publish(msgtopic, payload, 2, True)
+                    time.sleep(1)
             except TypeError:
                 c.execute('''INSERT INTO error (app, error) VALUES (?,?)''', ('mqttlifx.py','TypeError'))
                 conn.commit()
