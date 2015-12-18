@@ -42,16 +42,12 @@ def on_message(client, userdata, msg):
                 green = round(brightness/2 - ((brightness/2) * ((max + min)/2 - temp) / ((max - min)/2)))
             else:
                 green = round(brightness/2 - ((brightness/2 * (temp - (max + min)/2))/ ((max - min)/2)))
-            msgtopic = "house/lounge/temperature"
+            msgtopic = "home/lounge/temperature"
             print msgtopic
             print payload
             client.publish(msgtopic, payload, 2, True)
             payload = "Power:True/" + "Red:" + str(red) + "/" + "Green:" + str(green) + "/" + "Blue:" + str(blue) + "/"
             msgtopic = "particle/InternetButton/buttons/2"
-            print msgtopic
-            print payload
-            client.publish(msgtopic, payload, 2, True)
-            msgtopic = "home/lounge/temperature"
             print msgtopic
             print payload
             client.publish(msgtopic, payload, 2, True)
@@ -70,7 +66,6 @@ def on_message(client, userdata, msg):
 conn = sqlite3.connect(sqlite_file)
 c = conn.cursor()
 client = mqtt.Client()
-time.sleep(1)
 client.on_connect = on_connect
 client.on_message = on_message
 

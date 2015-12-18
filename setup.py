@@ -61,14 +61,13 @@ while(1):
 ###############################
 # There has to be a better way... add the light labels here, and which button should react to their status
 ###############################
-                    try:
-                        c.execute('''SELECT * FROM lightsettings WHERE ID = (SELECT MAX(ID) FROM lightsettings WHERE label=?)''', (label,))
-                    except sqlite3.IntegrityError:
-                        print("SQLite IntegrityError")
-                    buttonrow = c.fetchone()
-                    print buttonrow
-                    print buttonrow[2]
-                    button = buttonrow[2]
+                    if label == "Study":
+                        button = 3
+                    if label == "Robe" or label == "Davids" or label == "Shitter" or label == "Bedroom1" or label == "Lans":
+                        button = 1
+                    if label.startswith("Lounge"):
+                        button = 4
+                        print "button 4"
                     rgb = colorsys.hsv_to_rgb(hue/360, saturation, brightness)
                     red = round(rgb[0] * 255 / dimfactor)
                     green = round(rgb[1] * 255 / dimfactor)

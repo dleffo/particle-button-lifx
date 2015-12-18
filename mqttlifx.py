@@ -13,6 +13,33 @@ from lifx.color import HSBK
 import sqlite3
 import time
 
+def toggle_lights(button):
+    try:
+        c.execute('''SELECT * FROM lightsettings WHERE ID = (SELECT MAX(ID) FROM lightsettings WHERE button=? AND IsGroup=?)''', (button,1))
+    except sqlite3.IntegrityError:
+        print("SQLite IntegrityError")
+    row = c.fetchone()
+    toggle = ""
+    print row
+    print row[0]
+    for g in lights.get_groups():
+            if g.label == row[0]:
+                for l in g:
+                    print "Light " + str(l.label)
+                    if str(l.power) == "True":
+                        toggle = "Off"
+                        print str(l.label) + "is on"
+                if toggle == "Off":
+                    for l in g:
+                        print "Turning light " + str(l.label) + " off."
+                        l.power = False
+                else:
+                    for l in g:
+                        print "Turning light " + str(l.label) + " on."
+                        l.power = True
+
+
+
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, rc):
@@ -36,25 +63,8 @@ def on_message(client, userdata, msg):
     try:
         if str(msg.topic) == "particle/" + str(deviceID) + "/buttons":
             if str(msg.payload) == 'Button 1 Pressed':
-                toggle = ""
-                print "Button for Bedroom detected"
-                for g in lights.get_groups():
-                        if g.label == "Bedroom":
-                            for l in g:
-                                print "Light " + str(l.label)
-                                if str(l.power) == "True":
-                                    toggle = "Off"
-                                    print str(l.label) + "is on"
-                            if toggle == "Off":
-                                for l in g:
-                                    print "Turning light " + str(l.label) + " off."
-                                    l.power = False
-                            else:
-                                for l in g:
-                                    print "Turning light " + str(l.label) + " on."
-                                    l.power = True
-                client.publish(msg.topic, "Tried toggling Bedroom lights")
-
+                button = 1
+                toggle_lights(button)
             if str(msg.payload) == 'Button 2 Pressed':
                 colour = HSBK(0,0,0.75,3200)
                 for l in lights.get_devices():
@@ -62,32 +72,12 @@ def on_message(client, userdata, msg):
                     topic = str(msg.topic) + "/2"
                     client.publish(topic, "Power:True/Red:32/Green:32/Blue:32")
                 client.publish(msg.topic, "Set lights to standard colour")
-
             if str(msg.payload) == 'Button 3 Pressed':
-                for l in lights.get_devices():
-                    if l.label == "Study":
-                        l.power_toggle(delay)
-                client.publish(msg.topic, "Tried toggling Study lights")
-
+                button = 3
+                toggle_lights(button)
             if str(msg.payload) == 'Button 4 Pressed':
-                toggle = ""
-                print "Button for Lounge detected"
-                for g in lights.get_groups():
-                        if g.label == "Lounge":
-                            for l in g:
-                                print "Light " + str(l.label)
-                                if str(l.power) == "True":
-                                    toggle = "Off"
-                                    print str(l.label) + "is on"
-                            if toggle == "Off":
-                                for l in g:
-                                    print "Turning light " + str(l.label) + " off."
-                                    l.power = False
-                            else:
-                                for l in g:
-                                    print "Turning light " + str(l.label) + " on."
-                                    l.power = True
-                client.publish(msg.topic, "Tried toggling Lounge lights")
+                button = 4
+                toggle_lights(button)
     except KeyError:
         print "Hokey lightbulb code shat it's duds on a KeyError!"
         c.execute('''INSERT INTO error (app, error) VALUES (?,?)''', ('mqttlifx.py','KeyError'))
@@ -101,7 +91,7 @@ def on_message(client, userdata, msg):
     except KeyboardInterrupt:
         print "Keyboard Interrupt.  Exiting"
 
-conn = sqlite3.connect('/home/david/lifx/automation.db')
+conn = sqlite3.connect(sqlite_file)
 c = conn.cursor()
 
 lights = lifx.Client()
