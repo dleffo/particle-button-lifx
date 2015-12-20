@@ -67,8 +67,8 @@ while(1):
                         print("SQLite IntegrityError")
                     buttonrow = c.fetchone()
                     print buttonrow
-                    print buttonrow[2]
-                    button = buttonrow[2]
+                    print buttonrow[4]
+                    button = buttonrow[4]
                     rgb = colorsys.hsv_to_rgb(hue/360, saturation, brightness)
                     red = round(rgb[0] * 255 / dimfactor)
                     green = round(rgb[1] * 255 / dimfactor)
@@ -79,6 +79,7 @@ while(1):
                         payload = "Power:" + str(power) + "/" + "Red:" + str(red) + "/" + "Green:" + str(green) + "/" + "Blue:" + str(blue) + "/"
                         print payload
                         msgtopic = "particle/InternetButton/buttons/" + str(button)
+                        print msgtopic
                         client.publish(msgtopic, payload, 2, True)
                     elif str(power) == "True":
                         if hue != row[2] or saturation != row[3] or brightness != row[4]:

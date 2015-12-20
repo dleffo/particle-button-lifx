@@ -15,30 +15,40 @@ import time
 
 def toggle_lights(button):
     try:
-        c.execute('''SELECT * FROM lightsettings WHERE ID = (SELECT MAX(ID) FROM lightsettings WHERE button=? AND IsGroup=?)''', (button,1))
+        c.execute('''SELECT * FROM lightsettings WHERE button=? AND IsGroup=?''', (button,0))
     except sqlite3.IntegrityError:
         print("SQLite IntegrityError")
-    row = c.fetchone()
-    toggle = ""
-    print row
-    print row[0]
-    for g in lights.get_groups():
-            if g.label == row[0]:
-                for l in g:
-                    print "Light " + str(l.label)
-                    if str(l.power) == "True":
-                        toggle = "Off"
-                        print str(l.label) + "is on"
-                if toggle == "Off":
-                    for l in g:
-                        print "Turning light " + str(l.label) + " off."
-                        l.power = False
-                else:
-                    for l in g:
-                        print "Turning light " + str(l.label) + " on."
-                        l.power = True
+    finish = 0
+    while (finish == 0):
+        row = c.fetchone()
+        if row == None:
+            finish = 1
+        else:
+            toggle = ""
+            print "Row is: " + str(row)
+            for l in lights.by_label(row[1]):
+                print l
+                if str(l.power) == "True":
+                    toggle = "Off"
+                    print str(l.label) + "is on"
 
-
+    if toggle == "Off":
+        power = False
+    else:
+        power = True
+    try:
+        c.execute('''SELECT * FROM lightsettings WHERE button=? AND IsGroup=?''', (button,0))
+    except sqlite3.IntegrityError:
+        print("SQLite IntegrityError")
+    finish = 0
+    while (finish == 0):
+        row = c.fetchone()
+        if row == None:
+            finish = 1
+        else:
+            for l in lights.by_label(row[1]):
+                if l.label == row[1]:
+                    l.power = power
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -54,6 +64,9 @@ def on_connect(client, userdata, rc):
 def on_message(client, userdata, msg):
     payload = str(msg.payload)
     topic = msg.topic
+    print topic
+    print payload
+    print " "
     try:
         c.execute('''INSERT INTO mqtt (topic, message) VALUES(?,?)''', (payload, topic))
     except sqlite3.IntegrityError:
