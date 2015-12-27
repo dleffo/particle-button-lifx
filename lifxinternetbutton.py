@@ -11,15 +11,9 @@ import MySQLdb
 import mysqlinit
 
 def toggle_lights(button):
-    cursor.execute("""SELECT * FROM lightsettings WHERE button='%s' AND IsGroup='%s'""" % (button,0))
+    cursor.execute("""SELECT * FROM lightsettings WHERE button='%s' AND IsGroup='%s' AND Power = '%s'""" % (button,0,1))
     row = cursor.fetchone()
-    while row is not None:
-        toggle = ""
-        for l in lights.by_label(row[1]):
-            if str(l.power) == "True":
-                toggle = "Off"
-        row = cursor.fetchone()
-    if toggle == "Off":
+    if row is not None:
         power = False
     else:
         power = True

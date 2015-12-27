@@ -63,7 +63,6 @@ while(1):
                     cursor.execute('''SELECT * FROM lightsettings WHERE ID = (SELECT MAX(ID) FROM lightsettings WHERE label='%s')''' % (label,))
                     buttonrow = cursor.fetchone()
                     button = buttonrow[4]
-                    print button
                     rgb = colorsys.hsv_to_rgb(hue/360, saturation, brightness)
                     red = round(rgb[0] * 255 / dimfactor)
                     green = round(rgb[1] * 255 / dimfactor)
@@ -71,8 +70,9 @@ while(1):
                     if power != row[1]:
                         payload = "Power:" + str(l.power) + "/" + "Red:" + str(red) + "/" + "Green:" + str(green) + "/" + "Blue:" + str(blue) + "/"
                         msgtopic = "particle/InternetButton/buttons/" + str(button)
-                        print "topic is: " + msgtopic
                         client.publish(msgtopic, payload, 2, True)
+                        cursor.execute("""UPDATE lightsettings SET Power = '%s' WHERE label = '%s' AND IsGroup = 0""" % (power,label))
+                        cnx.commit()
                     elif power == 1:
                         if hue != row[2] or saturation != row[3] or brightness != row[4]:
                             payload = "Power:" + str(l.power) + "/" + "Red:" + str(red) + "/" + "Green:" + str(green) + "/" + "Blue:" + str(blue) + "/"

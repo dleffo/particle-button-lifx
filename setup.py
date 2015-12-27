@@ -3,11 +3,11 @@ import lifx
 from lifx.color import HSBK
 import MySQLdb
 import time
-import netrc
+import mysqlinit
 
-secrets = netrc.netrc()
-login, nothing, password = secrets.authenticators('automation')
-cnx = MySQLdb.connect(user=login, passwd=password, host='127.0.0.1', db='automation')
+user = mysqlinit.user()
+password = mysqlinit.password()
+cnx = MySQLdb.connect(user=user, passwd=password, host='127.0.0.1', db='automation')
 cursor=cnx.cursor()
 
 print "Welcome to the setup."
@@ -35,14 +35,18 @@ answer = (raw_input("Note this will clear out the current button behaviour.  Do 
 
 if answer == 'Y' or answer == 'y':
     cursor.execute("DROP TABLE IF EXISTS lightsettings")
-    cursor.execute("""CREATE TABLE lightsettings(lightID TEXT, label TEXT,IsGroup INTEGER, Grouplabel TEXT, Button INTEGER,Hue FLOAT,Saturation FLOAT,Brightness FLOAT,Kelvin FLOAT,ID INTEGER PRIMARY KEY AUTO_INCREMENT UNIQUE)""")
+    cursor.execute("""CREATE TABLE lightsettings(lightID TEXT, label TEXT,IsGroup INTEGER, Grouplabel TEXT, Button INTEGER, Power INTEGER, Hue FLOAT, Saturation FLOAT, Brightness FLOAT, Kelvin FLOAT, ID INTEGER PRIMARY KEY AUTO_INCREMENT UNIQUE)""")
     cnx.commit()
     for g in lights.get_groups():
         groupanswer = (raw_input("For group " + str(g.label) + " which button would you like:") or 0)
         cursor.execute("""INSERT INTO lightsettings(label, IsGroup, Grouplabel, Button, Hue, Saturation, Brightness, Kelvin) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')""" % (g.label,1,g.label,groupanswer,0,0,0.75,3500))
         cnx.commit()
         for l in g:
-            cursor.execute("""INSERT INTO lightsettings(lightID, label, IsGroup, Grouplabel, Button, Hue, Saturation, Brightness, Kelvin) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')""" % (l.id,l.label,0,g.label,groupanswer,0,0,0.75,3500))
+            if str(l.power) == "True":
+                power = 1
+            else:
+                power = 0
+            cursor.execute("""INSERT INTO lightsettings(lightID, label, IsGroup, Grouplabel, Button, Power, Hue, Saturation, Brightness, Kelvin) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')""" % (l.id,l.label,0,g.label,groupanswer,power,0,0,0.75,3500))
             cnx.commit()
         answer = (raw_input("Do you want to adjust this group's lights individually?") or 'Y')
         if answer == 'Y' or answer == 'y':
