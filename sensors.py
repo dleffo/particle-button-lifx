@@ -1,11 +1,12 @@
 #### need to put your deviceID here
 deviceID = "infrared"
+mqttclient = "mqtt.home.local"
 delay = 1000
-sqlite_file = '/home/david/lifx/automation.db'
 
 import time
-import sqlite3
+import MySQLdb
 import paho.mqtt.client as mqtt
+import mysqlinit
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, rc):
@@ -19,19 +20,11 @@ def on_connect(client, userdata, rc):
 def on_message(client, userdata, msg):
     payload = str(msg.payload)
     topic = msg.topic
-#    try:
-#        c.execute('''INSERT INTO mqtt (topic, message) VALUES(?,?)''', (payload, topic))
-#    except sqlite3.IntegrityError:
-#        print("ERROR")
-#    conn.commit()
     try:
         if str(msg.topic) == "particle/" + str(deviceID) + "/sensors/temp":
             print("Temperature data detected")
-            try:
-                c.execute('''INSERT INTO sensors (device, temperature) VALUES(?,?)''', (str(deviceID), payload))
-            except sqlite3.IntegrityError:
-                print("ERROR")
-            conn.commit()
+            cursor.execute('''INSERT INTO sensors (device, temperature) VALUES('%s','%s')''' % (str(deviceID), payload))
+            cnx.commit()
             min = 16
             max = 30
             brightness = 100
@@ -43,33 +36,33 @@ def on_message(client, userdata, msg):
             else:
                 green = round(brightness/2 - ((brightness/2 * (temp - (max + min)/2))/ ((max - min)/2)))
             msgtopic = "home/lounge/temperature"
-            print msgtopic
-            print payload
             client.publish(msgtopic, payload, 2, True)
             payload = "Power:True/" + "Red:" + str(red) + "/" + "Green:" + str(green) + "/" + "Blue:" + str(blue) + "/"
             msgtopic = "particle/InternetButton/buttons/2"
-            print msgtopic
-            print payload
             client.publish(msgtopic, payload, 2, True)
 
     except KeyError:
         print "Hokey lightbulb code shat it's duds on a KeyError!"
-        c.execute('''INSERT INTO error (app, error) VALUES (?,?)''', ('mqttsensors.py','KeyError'))
-        conn.commit()
+        cursor.execute("""INSERT INTO error (app, error) VALUES ('%s','%s')""" % ('lifxinternetbutton.py','KeyError'))
+        cnx.commit()
+        raise
     except AttributeError:
-        c.execute('''INSERT INTO error (app, error) VALUES (?,?)''', ('mqttsensors.py', 'AttributeError'))
-        print "Hokey lightbulb code shat it's duds on an AttributeError!"
-        conn.commit()
+        cursor.execute('''INSERT INTO error (app, error) VALUES ('%s','%s')''' % ('lifxinternetbutton.py', 'AttributeError'))
+        cnx.commit()
+        raise
     except KeyboardInterrupt:
         print "Keyboard Interrupt.  Exiting"
 
-conn = sqlite3.connect(sqlite_file)
-c = conn.cursor()
+
+user = mysqlinit.user()
+password = mysqlinit.password()
+cnx = MySQLdb.connect(user=user, passwd=password, host='127.0.0.1', db='automation')
+cursor=cnx.cursor()
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect("mqtt.home.local", 1883, 60)
+client.connect(mqttclient, 1883, 60)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
