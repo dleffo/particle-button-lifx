@@ -38,6 +38,7 @@ if answer == 'Y' or answer == 'y':
     cursor.execute("""CREATE TABLE lightsettings(lightID TEXT, label TEXT,IsGroup INTEGER, Grouplabel TEXT, Button INTEGER, Power INTEGER, Hue FLOAT, Saturation FLOAT, Brightness FLOAT, Kelvin FLOAT, ID INTEGER PRIMARY KEY AUTO_INCREMENT UNIQUE)""")
     cnx.commit()
     for g in lights.get_groups():
+        print "------------------"
         groupanswer = (raw_input("For group " + str(g.label) + " which button would you like:") or 0)
         cursor.execute("""INSERT INTO lightsettings(label, IsGroup, Grouplabel, Button, Hue, Saturation, Brightness, Kelvin) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')""" % (g.label,1,g.label,groupanswer,0,0,0.75,3500))
         cnx.commit()
@@ -46,7 +47,7 @@ if answer == 'Y' or answer == 'y':
                 power = 1
             else:
                 power = 0
-            cursor.execute("""INSERT INTO lightsettings(lightID, label, IsGroup, Grouplabel, Button, Power, Hue, Saturation, Brightness, Kelvin) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')""" % (l.id,l.label,0,g.label,groupanswer,power,0,0,0.75,3500))
+            cursor.execute("""INSERT INTO lightsettings(lightID, label, IsGroup, Grouplabel, Button, Power, Hue, Saturation, Brightness, Kelvin) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')""" % (hex(l.id),l.label,0,g.label,groupanswer,power,0,0,0.75,3500))
             cnx.commit()
         answer = (raw_input("Do you want to adjust this group's lights individually?") or 'Y')
         if answer == 'Y' or answer == 'y':
