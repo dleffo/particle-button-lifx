@@ -1,7 +1,7 @@
 #### need to put your deviceID here
+version = 0.5
 deviceID = "InternetButton"
 mqttclient = "mqtt.home.local"
-delay = 1000
 
 import lifx
 import paho.mqtt.client as mqtt
@@ -18,11 +18,17 @@ def toggle_lights(button):
     else:
         power = True
     cursor.execute("""SELECT * FROM lightsettings WHERE button='%s' AND IsGroup='%s'""" %(button,0))
-    row = cursor.fetchone()
-    while row is not None:
-        for l in lights.by_label(row[1]):
+    dbid = [i[0] for i in cursor.fetchall()]
+    try:
+        for n in dbid:
+            l = lights.by_id(int(n,16))
             l.power = power
-            row = cursor.fetchone()
+    except IndexError:
+        print "IndexError.  Probably can't find the bulb"
+        print n
+        lights.discover()
+    except lifx.device.DeviceTimeoutError:
+        print "Bulb Timeout Error"
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -30,7 +36,7 @@ def on_connect(client, userdata, rc):
     print("Connected with result code "+str(rc))
     client.subscribe("particle/#")
     client.subscribe("lifx/#")
-    client.publish("particle/status","lifxinternetbutton is alive, version" + str(0.4))
+    client.publish("particle/status","lifxinternetbutton is alive, version" + str(version))
 	# Subscribing in on_connect() means that if we lose the connection and
 	# reconnect then subscriptions will be renewed.
 
@@ -76,9 +82,10 @@ def on_message(client, userdata, msg):
 
 user = mysqlinit.user()
 password = mysqlinit.password()
+ipaddress = mysqlinit.get_lan_ip()
 cnx = MySQLdb.connect(user=user, passwd=password, host='127.0.0.1', db='automation')
 cursor=cnx.cursor()
-lights = lifx.Client()
+lights = lifx.Client(address=ipaddress)
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
