@@ -30,7 +30,7 @@ password = mysqlinit.password()
 ipaddress = mysqlinit.get_lan_ip()
 cnx = MySQLdb.connect(user=user, passwd=password, host='127.0.0.1', db='automation')
 cursor=cnx.cursor()
-lights = lifx.Client(address=ipaddress)
+lights = lifx.Client(address=ipaddress, discoverpoll=600, devicepoll=60)
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message

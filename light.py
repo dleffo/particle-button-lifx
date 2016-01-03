@@ -30,7 +30,7 @@ def validate_input():
         try:
             float(args.hue)
         except:
-            print "Entry for hue is not a number, try again sucker."
+            print "Entry for hue is not a number, try again."
             exit()
         if float(args.hue) < 0 or float(args.hue) >360:
             print "Hue is out of range, setting to 0"
@@ -40,7 +40,7 @@ def validate_input():
         try:
             float(args.saturation)
         except:
-            print "Entry for saturation is not a number, try again sucker."
+            print "Entry for saturation is not a number, try again."
             exit()
         if float(args.saturation) < 0 or float(args.saturation) >1:
             print "Saturation is out of range, setting to 0"
@@ -50,7 +50,7 @@ def validate_input():
         try:
             float(args.brightness)
         except:
-            print "Entry for brightness is not a number, try again sucker."
+            print "Entry for brightness is not a number, try again."
             exit()
         if float(args.brightness) < 0 or float(args.brightness) >1:
             print "Brightness is out of range, setting to 1"
@@ -60,7 +60,7 @@ def validate_input():
         try:
             float(args.kelvin)
         except:
-            print "Entry for kelvin is not a number, try again sucker."
+            print "Entry for kelvin is not a number, try again."
             exit()
 
         if float(args.kelvin) < 2500:
@@ -74,7 +74,7 @@ def validate_input():
         try:
             float(args.delay)
         except:
-            print "Entry for delay is not a number, try again sucker."
+            print "Entry for delay is not a number, try again."
             exit()
 
         if float(args.delay) < 0:
@@ -85,7 +85,7 @@ def validate_input():
         try:
             float(args.fade)
         except:
-            print "Entry for fade is not a number, try again sucker."
+            print "Entry for fade is not a number, try again."
             exit()
 
         if float(args.fade) < 0:
@@ -161,10 +161,8 @@ def group(lights,group):
                     if args.hue > 0 or args.saturation > 0  or args.brightness > 0 or args.kelvin > 0:
                         colour(l)
                     if args.on:
-                        print int(args.fade)
                         l.fade_power(True, duration = int(float(args.fade)*1000))
                     if args.off:
-                        print int(args.fade)
                         l.fade_power(False, duration = int(float(args.fade)*1000))
         else:
             print "Did not find light.  Retrying..."
@@ -177,7 +175,7 @@ def group(lights,group):
 
 
 validate_input()
-lights = lifx.Client(address=ipaddress)
+lights = lifx.Client(address=ipaddress, discoverpoll=600, devicepoll=60)
 time.sleep(0.5)
 
 

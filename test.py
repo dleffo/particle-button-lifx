@@ -1,22 +1,26 @@
-#!/usr/bin/env python
-import os
-import code
-import lifx
 
-# Try to get readline if available
+
+import MySQLdb
+host = 'localhost'
+user = 'root'
+passwd = 'M2xw3ll'
+mydb = MySQLdb.connect(host, user, passwd)
+cursor = mydb.cursor()
 try:
-    import readline
-except ImportError:
-    try:
-        import pyreadline as readline
-    except ImportError:
-        pass
-
-broadcast_addr = os.environ.get('LIFX_BROADCAST', '255.255.255.255')
-
-# Start the client
-lights = lifx.Client(broadcast=broadcast_addr)
-
-# Start interactive console
-shell = code.InteractiveConsole({'lights': lights})
-shell.interact(banner='Use the "lights" variable to use the SDK')
+    mkuser = 'symphony'
+    creation = "CREATE USER IF NOT EXISTS '%s'@'%s'" %(mkuser, host)
+    print creation
+    results = cursor.execute(creation)
+    print "User creation returned", results
+    mkpass = 'n0n3wp4ss'
+    setpass = "SET PASSWORD FOR '%s'@'%s' = PASSWORD('%s')" %(mkuser, host, mkpass)
+    results = cursor.execute(setpass)
+    print "Setting of password returned", results
+    granting = "GRANT ALL ON *.* TO '%s'@'%s'" %(mkuser, host)
+    results = cursor.execute(granting)
+    print "Granting of privileges returned", results
+    granting = "REVOKE ALL PRIVILEGES ON *.* FROM '%s'@'%s'" %(mkuser, host)
+    results = cursor.execute(granting)
+    print "Revoking of privileges returned", results
+except MySQLdb.Error, e:
+    print e
