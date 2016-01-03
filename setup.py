@@ -1,17 +1,62 @@
 # for setting up the database
+import getpass
 import lifx
 from lifx.color import HSBK
 import MySQLdb
 import time
 import mysqlinit
 
-user = mysqlinit.user()
-password = mysqlinit.password()
-cnx = MySQLdb.connect(user=user, passwd=password, host='127.0.0.1', db='automation')
-cursor=cnx.cursor()
-
 print "Welcome to the setup."
-print "This script will ask you questions to setup what lights turn on/off for what button"
+print "This script will ask you questions to setup the database and determine what lights turn on/off for what button"
+print "NOTE!  You need to enter the MySQL root password to be able to set up the database and database user."
+user = 'root'
+rtpassword = getpass.getpass('Please enter MySQL root password:')
+print "---------"
+print "What would you like the 'automation' user password to be for MySQL?"
+password = getpass.getpass("Please enter MySQL 'automation' user password:")
+cnx = MySQLdb.connect(user=user, passwd=rtpassword)
+cursor=cnx.cursor()
+cursor.execute("CREATE DATABASE IF NOT EXISTS automation")
+cursor.execute("SELECT user FROM mysql.user WHERE user = 'automation'")
+ifexists = cursor.fetchone()
+if not ifexists:
+    creation = "CREATE USER automation identified by '%s'" % password
+    cursor.execute(creation)
+    cnx.commit()
+else:
+    print "User 'automation' already exists.  Please make sure the password supplied is the password for the existing 'automation' user"
+privileges = "GRANT ALL PRIVILEGES ON automation.* to automation"
+cursor.execute(privileges)
+cursor.execute("FLUSH PRIVILEGES")
+cnx.commit()
+cursor.execute("USE automation")
+cursor.execute("CREATE TABLE IF NOT EXISTS `error` (\
+                `app` text,\
+                `error` text,\
+                `datetime` datetime DEFAULT CURRENT_TIMESTAMP,\
+                `id` int(11) NOT NULL AUTO_INCREMENT,\
+                PRIMARY KEY (`id`)\
+                )")
+cursor.execute("CREATE TABLE IF NOT EXISTS `lights` (\
+                `label` text,\
+                `power` int(11) DEFAULT NULL,\
+                `hue` double DEFAULT NULL,\
+                `saturation` double DEFAULT NULL,\
+                `brightness` double DEFAULT NULL,\
+                `kelvin` int(11) DEFAULT NULL,\
+                `datetime` datetime DEFAULT CURRENT_TIMESTAMP,\
+                `id` int(11) NOT NULL AUTO_INCREMENT,\
+                PRIMARY KEY (`id`)\
+                )")
+cursor.execute("CREATE TABLE IF NOT EXISTS `mqtt` (\
+                `topic` text,\
+                `message` text,\
+                `datetime` datetime DEFAULT CURRENT_TIMESTAMP,\
+                `id` int(11) NOT NULL AUTO_INCREMENT,\
+                PRIMARY KEY (`id`)\
+                )")
+cnx.commit()
+
 response = 'N'
 while(response == 'N'):
     print "These lights have been detected:"
