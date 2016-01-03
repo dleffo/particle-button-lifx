@@ -56,18 +56,30 @@ def on_message(client, userdata, msg):
                 button = 1
                 toggle_lights(button)
             if str(msg.payload) == 'Button 2 Pressed':
-                colour = HSBK(0,0,0.75,3200)
-                for l in lights.get_devices():
-                    l.fade_color(colour)
-                    topic = str(msg.topic) + "/2"
-                    client.publish(topic, "Power:True/Red:32/Green:32/Blue:32")
-                client.publish(msg.topic, "Set lights to standard colour")
+                button = 2
+                toggle_lights(button)
+            # if str(msg.payload) == 'Button 2 Pressed':
+            #     colour = HSBK(0,0,0.75,3200)
+            #     for l in lights.get_devices():
+            #         l.fade_color(colour)
+            #         topic = str(msg.topic) + "/2"
+            #         client.publish(topic, "Power:True/Red:32/Green:32/Blue:32")
+            #     client.publish(msg.topic, "Set lights to standard colour")
             if str(msg.payload) == 'Button 3 Pressed':
                 button = 3
                 toggle_lights(button)
             if str(msg.payload) == 'Button 4 Pressed':
                 button = 4
                 toggle_lights(button)
+            if str(msg.payload) == 'Button 5 Pressed':
+                colour = HSBK(0,0,0.75,3200)
+                for l in lights.get_devices():
+                    l.fade_color(colour)
+                    topic = str(msg.topic) + "/2"
+                    client.publish(topic, "Power:True/Red:32/Green:32/Blue:32")
+                client.publish(msg.topic, "Set lights to standard colour")
+
+
     except KeyError:
         print "Hokey lightbulb code shat it's duds on a KeyError!"
         cursor.execute("""INSERT INTO error (app, error) VALUES ('%s','%s')""" % ('lifxinternetbutton.py','KeyError'))
