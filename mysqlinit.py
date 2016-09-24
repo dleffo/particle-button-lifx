@@ -12,7 +12,7 @@ def user():
     return user
 
 def password():
-    password = 'yourpassword'
+    password = 'BJgYbM4un5G1a8OQTk41'
     return password
 
 def ipaddress():
@@ -46,3 +46,7 @@ def get_lan_ip():
             except IOError:
                 pass
     return ip
+
+def get_token():
+    token = "cf48af89c15018b54b2bd4d6fbc63be8b6bd31726c24885359b77c5577f79be8"
+    return token

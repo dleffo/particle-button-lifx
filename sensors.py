@@ -1,5 +1,4 @@
 #### need to put your deviceID here
-deviceID = "infrared"
 mqttclient = "mqtt.home.local"
 delay = 1000
 
@@ -19,11 +18,13 @@ def on_connect(client, userdata, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     payload = str(msg.payload)
-    topic = msg.topic
+    topic = str(msg.topic)
     try:
-        if str(msg.topic) == "particle/" + str(deviceID) + "/sensors/temp":
+        if topic.endswith("/sensors/temp"):
+            topictree = topic.split('/')
+            device = topictree[1]
             print("Temperature data detected")
-            cursor.execute('''INSERT INTO sensors (device, temperature) VALUES('%s','%s')''' % (str(deviceID), payload))
+            cursor.execute('''INSERT INTO sensors (device, temperature) VALUES('%s','%s')''' % (str(device), payload))
             cnx.commit()
             min = 16
             max = 30
@@ -35,10 +36,13 @@ def on_message(client, userdata, msg):
                 green = round(brightness/2 - ((brightness/2) * ((max + min)/2 - temp) / ((max - min)/2)))
             else:
                 green = round(brightness/2 - ((brightness/2 * (temp - (max + min)/2))/ ((max - min)/2)))
-            msgtopic = "home/lounge/temperature"
+            msgtopic = "home/" +str(device) + "/temperature"
             client.publish(msgtopic, payload, 2, True)
             payload = "Power:True/" + "Red:" + str(red) + "/" + "Green:" + str(green) + "/" + "Blue:" + str(blue) + "/"
-            msgtopic = "particle/InternetButton/buttons/2"
+            if str(device) == "infrared":
+                msgtopic = "particle/InternetButton/buttons/6"
+            if str(device) == "radio":
+                msgtopic = "particle/InternetButton/buttons/5"
             client.publish(msgtopic, payload, 2, True)
 
     except KeyError:
