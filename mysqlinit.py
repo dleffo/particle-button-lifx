@@ -8,7 +8,7 @@ if os.name != "nt":
 
 
 def user():
-    user = 'automation'
+    user = 'youruser'
     return user
 
 def password():
@@ -16,7 +16,7 @@ def password():
     return password
 
 def ipaddress():
-    ipaddress = '192.168.1.24'
+    ipaddress = 'serverip'
     return ipaddress
 
 
@@ -48,5 +48,5 @@ def get_lan_ip():
     return ip
 
 def get_token():
-    token = "cf48af89c15018b54b2bd4d6fbc63be8b6bd31726c24885359b77c5577f79be8"
+    token = "yourlifxtoken"
     return token
