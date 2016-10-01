@@ -12,7 +12,7 @@ def user():
     return user
 
 def password():
-    password = 'BJgYbM4un5G1a8OQTk41'
+    password = 'yourpassword'
     return password
 
 def ipaddress():
